@@ -16,7 +16,7 @@ export function Register() {
     e.preventDefault();
     try {
       // Cria o Tutor no Backend
-      await axios.post('http://localhost:3333/tutors', formData);
+      await axios.post('import.meta.env.VITE_API_URL', formData);
       alert("Cadastro realizado! Faça login.");
       navigate("/"); // Manda pro login
     } catch (error) {

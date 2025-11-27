@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, pass: string) => {
     try {
       // Chama seu Backend na porta 3333
-      const response = await axios.post('http://localhost:3333/login', {
+      const response = await axios.post('import.meta.env.VITE_API_URL', {
         email,
         password: pass
       });
