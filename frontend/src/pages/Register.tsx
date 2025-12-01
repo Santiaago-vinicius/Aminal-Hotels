@@ -1,6 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { api } from "../services/api";
+import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Phone, Lock } from "lucide-react";
 
 export function Register() {
@@ -15,12 +15,13 @@ export function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Cria o Tutor no Backend
-      await axios.post('import.meta.env.VITE_API_URL', formData);
+      await api.post('/tutors', formData);
       alert("Cadastro realizado! Faça login.");
-      navigate("/"); // Manda pro login
-    } catch (error) {
-      alert("Erro ao cadastrar. Tente outro email.");
+      navigate("/"); 
+    } catch (error: any) {
+      console.error(error);
+      const msg = error.response?.data?.message || "Erro desconhecido";
+      alert(`Erro ao cadastrar: ${msg}`);
     }
   };
 
@@ -67,7 +68,7 @@ export function Register() {
           </button>
         </form>
         <p className="mt-4 text-center text-sm">
-           Já tem conta? <a href="/" className="text-blue-600 hover:underline">Entrar</a>
+           Já tem conta? <Link to="/" className="text-blue-600 hover:underline">Entrar</Link>
         </p>
       </div>
     </div>

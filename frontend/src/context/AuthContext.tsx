@@ -1,7 +1,6 @@
 import { createContext, useReducer, useEffect, type ReactNode } from "react";
-import axios from "axios";
+import { api } from "../services/api.ts";
 
-// --- TIPOS ---
 interface User {
   id: string;
   name: string;
@@ -14,19 +13,16 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
-// Ações que o Reducer entende
 type AuthAction = 
   | { type: 'LOGIN'; payload: { user: User; token: string } }
   | { type: 'LOGOUT' };
 
-// --- ESTADO INICIAL ---
 const initialState: AuthState = {
   user: null,
   token: null,
   isAuthenticated: false,
 };
 
-// --- REDUCER (A máquina de estado) ---
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'LOGIN':
@@ -46,7 +42,6 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
-// --- CONTEXTO ---
 interface AuthContextType extends AuthState {
   login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
@@ -54,16 +49,15 @@ interface AuthContextType extends AuthState {
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-// --- PROVIDER (O Componente Pai) ---
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Ao recarregar a página, tenta recuperar o usuário do LocalStorage
   useEffect(() => {
     const storedToken = localStorage.getItem('animal_token');
     const storedUser = localStorage.getItem('animal_user');
 
     if (storedToken && storedUser) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
       dispatch({
         type: 'LOGIN',
         payload: { user: JSON.parse(storedUser), token: storedToken }
@@ -73,21 +67,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, pass: string) => {
     try {
-      // Chama seu Backend na porta 3333
-      const response = await axios.post('import.meta.env.VITE_API_URL', {
-        email,
-        password: pass
-      });
-
+      const response = await api.post('/login', { email, password: pass });
       const { tutor, token } = response.data;
 
-      // Salva no LocalStorage (persistência)
       localStorage.setItem('animal_token', token);
       localStorage.setItem('animal_user', JSON.stringify(tutor));
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      // Atualiza o Estado Global via Reducer
       dispatch({ type: 'LOGIN', payload: { user: tutor, token } });
-      
     } catch (error) {
       alert("Erro ao logar! Verifique email e senha.");
       throw error;
@@ -97,6 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     localStorage.removeItem('animal_token');
     localStorage.removeItem('animal_user');
+    delete api.defaults.headers.common['Authorization'];
     dispatch({ type: 'LOGOUT' });
   };
 

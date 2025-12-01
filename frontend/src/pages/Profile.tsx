@@ -1,23 +1,17 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { api } from "../services/api";
+import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Phone, Save, Trash2, ArrowLeft } from "lucide-react";
 
 export function Profile() {
-  const { user, token, logout } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Inicializa com os dados atuais do Contexto
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
-    phone: "" // Telefone não salvamos no context, mas poderiamos buscar do back se quisesse
-  });
-
-  const api = axios.create({
-    baseURL: 'import.meta.env.VITE_API_URL',
-    headers: { Authorization: `Bearer ${token}` }
+    phone: "" 
   });
 
   async function handleUpdate(e: React.FormEvent) {
@@ -25,7 +19,7 @@ export function Profile() {
     try {
       await api.put('/tutors', formData);
       alert("Perfil atualizado! Faça login novamente para ver as mudanças.");
-      logout(); // Força logout para atualizar o token/contexto
+      logout(); 
       navigate('/');
     } catch (error) {
       alert("Erro ao atualizar.");
@@ -52,10 +46,9 @@ export function Profile() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        
-        <button onClick={() => navigate('/dashboard')} className="flex items-center text-gray-500 hover:text-blue-600 mb-6">
+        <Link to="/dashboard" className="flex items-center text-gray-500 hover:text-blue-600 mb-6">
           <ArrowLeft size={18} className="mr-1"/> Voltar ao Dashboard
-        </button>
+        </Link>
 
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Editar Perfil</h1>
 
@@ -114,7 +107,6 @@ export function Profile() {
             <Trash2 size={18} /> Excluir Minha Conta
           </button>
         </div>
-
       </div>
     </div>
   );

@@ -1,21 +1,22 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { Lock, Mail } from "lucide-react"; // Ícones bonitos
+import { useNavigate, Link } from "react-router-dom";
+import { Lock, Mail } from "lucide-react"; 
 
 export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login } = useContext(AuthContext); // Pegamos a função login do contexto
+  const { login } = useContext(AuthContext); 
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await login(email, password);
-      navigate("/dashboard"); // Se der certo, manda pro painel
+      navigate("/dashboard"); 
     } catch (error) {
-      // O erro já aparece no alert do Context
+      console.error("Erro no login:", error);
+      alert("Erro ao fazer login. Verifique suas credenciais.");
     }
   };
 
@@ -65,9 +66,9 @@ export function Login() {
         
         <p className="mt-4 text-center text-sm text-gray-600">
           Ainda não tem conta?{" "}
-          <a href="/register" className="text-blue-600 hover:underline">
+          <Link to="/register" className="text-blue-600 hover:underline">
             Cadastre-se
-          </a>
+          </Link>
         </p>
       </div>
     </div>

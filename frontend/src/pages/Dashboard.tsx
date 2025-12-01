@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom"; 
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import axios from "axios";
-import { Trash2, Plus, Pencil, Cat, Dog, Rabbit, Save } from "lucide-react"; // Adicionei Pencil e Save
+import { api } from "../services/api";
+import { Trash2, Plus, Pencil, Cat, Dog, Rabbit, Save } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface Animal {
   id: string;
@@ -13,10 +13,8 @@ interface Animal {
 }
 
 export function Dashboard() {
-  const { user, token, logout } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const [animals, setAnimals] = useState<Animal[]>([]);
-  
-  // Estado para controlar se estamos EDITANDO alguém (guarda o ID)
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -24,11 +22,6 @@ export function Dashboard() {
     species: "dog",
     breed: "",
     age: ""
-  });
-
-  const api = axios.create({
-    baseURL: 'import.meta.env.VITE_API_URL',
-    headers: { Authorization: `Bearer ${token}` }
   });
 
   useEffect(() => { loadAnimals(); }, []);
@@ -40,19 +33,16 @@ export function Dashboard() {
     } catch (error) { console.error(error); }
   }
 
-  // Função inteligente: Serve tanto para CRIAR quanto para ATUALIZAR
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     try {
       const payload = { ...formData, age: Number(formData.age) };
 
       if (editingId) {
-        // MODO EDIÇÃO (PUT)
         await api.put(`/animals/${editingId}`, payload);
-        setEditingId(null); // Sai do modo edição
+        setEditingId(null);
         alert("Animal atualizado!");
       } else {
-        // MODO CRIAÇÃO (POST)
         await api.post('/animals', payload);
       }
       
@@ -63,7 +53,6 @@ export function Dashboard() {
     }
   }
 
-  // Preenche o formulário quando clica no Lápis
   function startEditing(animal: Animal) {
     setEditingId(animal.id);
     setFormData({
@@ -96,8 +85,6 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto">
-        
-        {/* Header com Link para Perfil */}
         <div className="flex justify-between items-center mb-8 bg-white p-6 rounded-lg shadow-sm">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Meus Pets 🐾</h1>
@@ -105,7 +92,7 @@ export function Dashboard() {
           </div>
           <div className="flex gap-4">
             <Link to="/profile" className="text-blue-600 hover:underline px-4 py-2">
-                Meu Perfil
+              Meu Perfil
             </Link>
             <button onClick={logout} className="text-red-500 hover:text-red-700 font-medium">
               Sair
@@ -114,14 +101,11 @@ export function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
-          {/* Formulário Inteligente */}
           <div className="bg-white p-6 rounded-lg shadow-sm h-fit border-t-4 border-blue-500">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
               {editingId ? <Pencil size={20}/> : <Plus size={20} />} 
               {editingId ? "Editar Pet" : "Novo Pet"}
             </h2>
-            
             <form onSubmit={handleSave} className="space-y-3">
               <input 
                 placeholder="Nome" className="w-full p-2 border rounded"
@@ -149,11 +133,9 @@ export function Dashboard() {
                 value={formData.breed}
                 onChange={e => setFormData({...formData, breed: e.target.value})} required
               />
-              
               <button className={`w-full text-white p-2 rounded flex items-center justify-center gap-2 ${editingId ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
                 {editingId ? <><Save size={18}/> Salvar Alterações</> : "Adicionar"}
               </button>
-
               {editingId && (
                 <button type="button" onClick={cancelEdit} className="w-full text-gray-500 text-sm hover:underline">
                   Cancelar Edição
@@ -162,7 +144,6 @@ export function Dashboard() {
             </form>
           </div>
 
-          {/* Lista */}
           <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {animals.map(animal => (
               <div key={animal.id} className={`bg-white p-4 rounded-lg shadow-sm border flex justify-between items-start ${editingId === animal.id ? 'border-orange-500 ring-2 ring-orange-100' : 'border-gray-100'}`}>
@@ -184,7 +165,6 @@ export function Dashboard() {
               </div>
             ))}
           </div>
-
         </div>
       </div>
     </div>
